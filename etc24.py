@@ -202,3 +202,4 @@ def add_season(df, output_file) :
 
 #output_file = '/pampa/cloutier/etc24_consec_v2.csv'
 #create_df24_consec(df, mask, output_file)
+# test
