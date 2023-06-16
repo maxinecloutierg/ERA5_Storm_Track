@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 """
 
-def frequency(df, bins)
+def frequency(df, bins) : 
 
     """
    
@@ -71,11 +71,11 @@ def custom_legend(seasons, colors) :
 
     for i, color in zip(range(0,len(seasons)), colors):
 
-    legend.get_texts()[i].set_position((-9, 0.5))
-    first_text = legend.get_texts()[i]  # Get the first legend text
-    first_text.set_fontweight('bold')   # Set font weight to bold
-    first_text.set_color(color)
-    first_text.set_alpha(0.8)           # transparency
+        legend.get_texts()[i].set_position((-9, 0.5))
+        first_text = legend.get_texts()[i]  # Get the first legend text
+        first_text.set_fontweight('bold')   # Set font weight to bold
+        first_text.set_color(color)
+        first_text.set_alpha(0.8)           # transparency
 
 
 def custom_layout(max_pct, bins) : 
@@ -92,7 +92,7 @@ def custom_layout(max_pct, bins) :
 
     # Step 1 : set ticks 
     
-	plt.xticks(bins[:-1])
+    plt.xticks(bins[:-1])
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.yticks(np.arange(0, max_pct, 3))
@@ -109,7 +109,7 @@ def custom_layout(max_pct, bins) :
 
 
 
-def set_textbox(mean, sigma)
+def set_textbox(mean, sigma) : 
 
     """
    
@@ -127,10 +127,10 @@ def set_textbox(mean, sigma)
     # Step 1 : Change mean and sigma format to keep 2 significant numbers
 
     mean = '{:0.2e}'.format(mean)
-	sigma = '{:0.2e}'.format(sigma)
+    sigma = '{:0.2e}'.format(sigma)
 	
-	# Step 2 : Transform first 4 digits into string (ex : 0.93e-05 = "0.93")
-	mean = mean[0 : 4]
+    # Step 2 : Transform first 4 digits into string (ex : 0.93e-05 = "0.93")
+    mean = mean[0 : 4]
     sigma = sigma[0 : 4]
 
     # Step 3 : Create textbox
@@ -144,7 +144,7 @@ def set_textbox(mean, sigma)
 
 
 
-def create_fig(file_in , file_out, seasons)
+def create_fig(file_in , file_out, seasons) : 
 
     """
     
@@ -156,55 +156,55 @@ def create_fig(file_in , file_out, seasons)
 	seasons  : seasons to be plotted
 
     """
-	# Step 1 : read csv file and affect initial variables
+    # Step 1 : read csv file and affect initial variables
 
     df24 = pd.read_csv(file_in)
     bins = np.arange(-2, 5, 0.5)
  	
-	crcm6 = df24.loc[df24.HU == True]             # keep rows that are within CRCM6 domain
-	colors = ['red', 'orange', 'royalblue', 'g']
+    crcm6 = df24.loc[df24.HU == True]             # keep rows that are within CRCM6 domain
+    colors = ['red', 'orange', 'royalblue', 'g']
 
-	i = 0.1                                       # To shift bars position in plot
-	max_pct = 0                                   # To format y axis in plot
+    i = 0.1                                       # To shift bars position in plot
+    max_pct = 0                                   # To format y axis in plot
 	
-	# Step 2 : Iterate through all seasons and create bar plot
+    # Step 2 : Iterate through all seasons and create bar plot
 	
-	for season, color in zip(seasons, colors) : 
+    for season, color in zip(seasons, colors) : 
 		
-		df = df24.loc[(df24.season == season) & (df24.HU == True)]
-		pct = frequency(df, bins)
-		plt.bar(bins[:-1]+i, pct, width=0.15, alpha=0.7,label=season, color=color)
+    	df = df24.loc[(df24.season == season) & (df24.HU == True)]
+    	pct = frequency(df, bins)
+    	plt.bar(bins[:-1]+i, pct, width=0.15, alpha=0.7,label=season, color=color)
 
-		# establish the max frequency for y limit axis on the bar plot later
+    	# establish the max frequency for y limit axis on the bar plot later
 
-		if max(pct) > max_pct : 
-			max_pct = max(pct)
+    	if max(pct) > max_pct : 
+    		max_pct = max(pct)
 		
-		i += 0.1
+    	i += 0.1
 
-	# Step 3 : Add custom legend
+    # Step 3 : Add custom legend
 	
-	legend = plt.legend(frameon=False, ncol=len(seasons), fontsize=16, columnspacing=0.5)
-	custom_legend(seasons, colors)
+    legend = plt.legend(frameon=False, ncol=len(seasons), fontsize=16, columnspacing=0.5)
+    custom_legend(seasons, colors)
 	
-	# Step 4 : Add x and y axis
+    # Step 4 : Add x and y axis
 	
-	custom_layout(max_pct, bins)
+    custom_layout(max_pct, bins)
 
-	# Step 5 : Calculate mean and standard deviation
+    # Step 5 : Calculate mean and standard deviation
 	
-	mean = vors['VORS_av08'].mean()
-	sigma = vors['VORS_av08'].std()
+    mean = vors['VORS_av08'].mean()
+    sigma = vors['VORS_av08'].std()
 
-	# Step 6 : Add textbox
+    # Step 6 : Add textbox
 
-	textstr = textstr(mean, sigma)
-	plt.text(2.2, 8, textstr, fontsize=16)
+    textstr = textstr(mean, sigma)
+    plt.text(2.2, 8, textstr, fontsize=16)
 
-	# Step 7 : show plot and save output in file_out
+    # Step 7 : show plot and save output in file_out
 	
-	plt.show()
-	plt.savefig('/pampa/cloutier/freq_dist.png')
+   # plt.show()
+    plt.savefig(file_out)
 
 
 
