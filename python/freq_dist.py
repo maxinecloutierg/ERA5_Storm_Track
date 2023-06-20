@@ -56,15 +56,16 @@ def frequency(df, bins) :
     return pct
 
 
-def custom_legend(seasons, colors) : 
+def custom_legend(legend, seasons, colors) : 
 	
     """
     
     Creates customized legend
 
     Parameters  : 
-		seasons : list of seasons to plot
-		colors  : list of colors for each season
+        legend  : legend to customize
+	seasons : list of seasons to plot
+	colors  : list of colors for each season
 
     """
     # Step 1 : Iterate through all seasons and customize accordingly
@@ -139,7 +140,7 @@ def set_textbox(mean, sigma) :
     r'$\mathrm{mean}:\ %s \times 10^{-5} \ \mathrm{s^{-1}}$' % mean,
     r'$\qquad \ \sigma:\ %s \times 10^{-5} \ \mathrm{s^{-1}}$' % sigma))
     
-    return textsrt
+    return textstr
 
 
 
@@ -151,8 +152,8 @@ def create_fig(file_in , file_out, seasons) :
     Create the frequency distribution figure and saves it in png format
 
     Parameters   : 
-		file_in  : path of the csv file to read
-		file_out : path to save the png image
+	file_in  : path of the csv file to read
+	file_out : path to save the png image
 	seasons  : seasons to be plotted
 
     """
@@ -168,7 +169,8 @@ def create_fig(file_in , file_out, seasons) :
     max_pct = 0                                   # To format y axis in plot
 	
     # Step 2 : Iterate through all seasons and create bar plot
-	
+    
+    plt.figure(figsize=(13,3))
     for season, color in zip(seasons, colors) : 
 		
     	df = df24.loc[(df24.season == season) & (df24.HU == True)]
@@ -185,20 +187,21 @@ def create_fig(file_in , file_out, seasons) :
     # Step 3 : Add custom legend
 	
     legend = plt.legend(frameon=False, ncol=len(seasons), fontsize=16, columnspacing=0.5)
-    custom_legend(seasons, colors)
+    custom_legend(legend, seasons, colors)
 	
     # Step 4 : Add x and y axis
 	
     custom_layout(max_pct, bins)
 
     # Step 5 : Calculate mean and standard deviation
-	
+    
+    vors = df24.loc[df24.HU==True]
     mean = vors['VORS_av08'].mean()
     sigma = vors['VORS_av08'].std()
 
     # Step 6 : Add textbox
 
-    textstr = textstr(mean, sigma)
+    textstr = set_textbox(mean, sigma)
     plt.text(2.2, 8, textstr, fontsize=16)
 
     # Step 7 : show plot and save output in file_out
@@ -206,5 +209,7 @@ def create_fig(file_in , file_out, seasons) :
    # plt.show()
     plt.savefig(file_out)
 
-
-
+file_in = '/pampa/cloutier/etc24_consec.csv'
+file_out = '/pampa/cloutier/freq_dist.png'
+seasons = ['JJA', 'SON', 'DJF', 'MAM']
+create_fig(file_in , file_out, seasons) 
