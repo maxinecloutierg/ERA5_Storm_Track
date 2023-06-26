@@ -20,23 +20,37 @@ Info :
 
 """
 
-# open catalogue dataset
-df = pd.read_csv('/home/data/ReAnalysis/ERA5/Storm_analysis/NAECv1/NAEC_1979_2020_v1.csv')
+def open_cat_mask(cat_in, mask_in) : 
 
-# CREATE A FUNCTION THAT TRANSFORMS NETCDF MASK TO DATAFRAME
+    """
+    Open NAEC catalogue and mask netCDF file and convert them into dataframes
 
-# open netcdf mask file
-file = '/pampa/picart/Masks/mask_GEM5_ERA5grid'
-data = xr.open_dataset(file)
+    Parameters  : 
+        cat_in  : Path of the NAEC catalogue
+        mask_in : Path of the mask netCDF
 
-# export netcdf to dataframe
-mask = data.to_dataframe()
+    return   : 
+        df   : Dataframe that contains NAEC catalogue
+        mask : Dataframe that contains the mask
 
-# drop index lat lon, but keep columns
-mask = mask.reset_index()
+    """
 
-# rename lat & lon columns as latitude & longitude
-mask = mask.rename(columns={'lat' : 'latitude', 'lon' : 'longitude'})
+    # Step 1 : Open catalogue
+
+    df = pd.read_csv('/home/data/ReAnalysis/ERA5/Storm_analysis/NAECv1/NAEC_1979_2020_v1.csv')
+    
+    # Step 2 :  Open mask, convert into dataframe and rename columns
+
+    mask = xr.open_dataset(mask_path)
+    mask = mask.to_dataframe() # convert netCDF to dataframe
+    mask = mask.reset_index() # drop lat and lon indexes
+    # rename lat and lon columns
+    mask = mask.rename(columns={'lat' : 'latitude', 'lon' : 'longitude'})
+
+    return df, mask 
+
+
+
 
 def create_df24_consec(df, mask, output_file): 
     
@@ -57,7 +71,7 @@ def create_df24_consec(df, mask, output_file):
     merge = df.merge(mask, how='left', on=['latitude', 'longitude'])
     merge = merge.fillna(value = False)
     df24_consec = pd.DataFrame(columns = df.columns)
-
+    
     # Step 2 : Filter ETCs in merge and save result as csv
 
     #iterate through each storm 
