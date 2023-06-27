@@ -53,10 +53,10 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
     # Step 4 : Rename lat & lon columns for latitude & longitude
     mk = mk.rename(columns={'lat' : 'latitude', 'lon' : 'longitude'})
 
-    return cat, mk
+    return cat, bnd, mk
 
 
-def get_distance(latS, lonS, bnd)
+def get_distance(latS, lonS, bnd) : 
 
     """
     Determine if a given grid point is at a minimal distance of 5deg from
@@ -88,7 +88,7 @@ def get_distance(latS, lonS, bnd)
 
 
 
-def add_season(df, output_file) : 
+def add_season(df) : 
 
     """
     Add a column called 'season' in df24 that gives the season in which the ETC occured. 
@@ -104,7 +104,7 @@ def add_season(df, output_file) :
         df (dataframe) : Dataframe to which we want to add the season column
 
     returns : 
-        df_new : 
+        df_new : Dataframe with the season column
     """
 
     seasons = { 'SON': [9, 10, 11], 'DJF': [12, 1, 2], 'MAM': [3, 4, 5], 'JJA': [6, 7, 8] }
@@ -182,9 +182,9 @@ for storm_id in merge['storm'].unique():
         if hu : 
             dist_cond = get_distance(latS, lonS, bnd)
 
-        # If the dist_cond is true, it also means that HU = True 
-        if dist_cond : 
-            count += 1 # Iterate the lifetime in subdomain count
+            # If the dist_cond is true, it also means that HU = True 
+            if dist_cond : 
+                count += 1 # Iterate the lifetime in subdomain count
 
         # If the grid point is not within the subdomain, but the count is already above 24, 
         # we can get out of the "for" loop
