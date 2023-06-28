@@ -148,6 +148,7 @@ def add_season(df) :
 
 
 # Step 1 : Open catalogue, boundary catalogue and mask
+
 cat_in = ('/home/data/ReAnalysis/ERA5/Storm_analysis/NAECv1/NAEC_1979_2020_v1.csv')
 bnd_in = ('/pampa/cloutier/outline_crcm6_domain.csv')
 mask_in = ('/pampa/picart/Masks/mask_GEM5_ERA5grid')
@@ -156,93 +157,38 @@ cat, bnd, mk = open_cat_mask(cat_in, bnd_in, mask_in)
 
 # Step 2 : Merge cat and mask to add HU column in cat
 
+cat = cat.loc[(cat.storm == 1) | (cat.storm == 2) | (cat.storm == 3)]
 merge = cat.merge(mk, how='left', on=['latitude', 'longitude'])
 merge = merge.fillna(value = False)
 
-# Step 3 : Initialize empty dataframe that will contain the final result
+# Step 3 : Filter storms and add to new dataframe
 
-df24 = pd.DataFrame(columns = cat.columns)
+df24 = pd.DataFrame(columns = cat.columns) # new dataframe with filtered etc
 
-# Step 4 : Filter catalogue data
-
-# Iterate through each storm 
-for storm_id in merge['storm'].unique():
-    storm_data = merge[merge['storm'] == storm_id].copy() # copy of merge for the given storm
-    count = 0 # lifetime count
-
-    # Iterate through each grid point of the storm
-    for _, row in storm_data.iterrows() : 
-        cond = False 
-        hu = row['HU']
-        latS = row['latitude']
-        lonS= row['longitude']
-        # check if storm center is within subdomain and at a 5° minimal 
-        # distance from boundaries
-        if hu : 
-#            print('check distance ...')
-            cond = get_distance(latS, lonS, bnd) 
-        stInDom.append(cond)
+# create groups for each storm and iterate through them
+for storm_id, group in merge.groupby('storm'):
     
-    # add a new column that determines if each storm center agrees or not with the above condition
-#    print('adding StInDom in storm_data ...')
-    storm_data['StInDom'] = stInDom
-#    print(storm_data['StInDom'])
-    n = 23
-    # exclude the last 23 lines in the search
-    storm_data_rows = storm_data.head(len(storm_data) - n)
-    
+    # within each group, iterate through each storm center (with apply function) 
+    # to determine if the given grid point is within subdomain and 
+    # has a minimal distance to the boundary > 5 degree
+    stInDom = group['HU'] & group.apply(lambda row: get_distance(row['latitude'], 
+					row['longitude'], bnd), axis=1)
     count = 0
     
-#    print('second for loop : ', row['storm'])
-    for idx, row in storm_data_rows.iterrows() : 
-        if row ['StInDom'] : 
-#            print('Initializing count to one')
-            count = 1
-            
-            # keep iterating for the next 23 grid points
-            for _, row in islice(storm_data.iterrows(), idx, idx+23) : 
-                if row['StInDom'] : 
-                    count += 1
-                
-                else :  
-#                    print(row['StInDom'], 'storm not in domain')
-                    break
-            
-            if count >= 24 : 
+    # count the consecutive True values in stInDom. We want to keep ETC 
+    # that were active for 24 consecutive hours or more in CRCM6 subdomain
+    for value in stInDom:
+        if value:
+            count += 1
+            if count >= 24:
+                df24 = df24.append(group)
+                print('Year in process:', df24['datetime'].iloc[-1])
                 break
-                
-#    print(count)                           
-    if count >= 24 :
-        df24 = df24.append(storm_data)
-        print('Year in process : ', df24['datetime'].iloc[-1])              
-
-#        # For each grid point that is in the subdomain (HU = True), determine if the latter is at
-#        # a minimal distance of 5deg from all grid points of the subdomain boundary 
-#        if hu : 
-#            dist_cond = get_distance(latS, lonS, bnd)
-
-            # If the dist_cond is true, it also means that HU = True 
-#            if dist_cond : 
-#                count += 1 # Iterate the lifetime in subdomain count
-
-        # If the grid point is not within the subdomain, but the count is already above 24, 
-        # we can get out of the "for" loop
-#        if hu == False and count >= 24 : 
-#           break
-
-        # If the grid point is not within the subdomain but the count is still under 24, 
-        # we need to restart the count and keep iterating through the storms grid point
-#        if hu == False and count < 24 : 
-#            count = 0
-
-    # Add to the new dataframe all etc that were alive for 24 consecutive hours or more 
-    # in CRCM6 subdomain
-#    if count >= 24 : 
-#        df24 = df24.append(storm_data)
-#        print('Year in process : ', df24['datetime'].iloc[-1])
+        else:
+            count = 0
 
 # Step 5 : Add the season column in dataframe
 df24_season = add_season(df24)
 
-# Step 6 : Save dataframe as csv 
-df24_season.to_csv('/pampa/cloutier/etc24_consec_v2.csv', index = False)
+# Step 6 : Save dataframe as csv
+df24_season.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
