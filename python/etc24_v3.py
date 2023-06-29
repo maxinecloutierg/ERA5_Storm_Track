@@ -80,7 +80,7 @@ def get_distance(latS, lonS, bnd) :
         dist = ((latS-latD)**2 + (lonS - lonD)**2)**0.5
         
         if dist <= 5 : 
-            dist_min = False
+            dist_cond = False
             break
             
     return dist_cond
@@ -88,7 +88,7 @@ def get_distance(latS, lonS, bnd) :
 
 
 
-def add_season(df) : 
+def add_season(df1) : 
 
     """
     Add a column called 'season' in df24 that gives the season in which the ETC occured. 
@@ -101,7 +101,7 @@ def add_season(df) :
     SON : September, October and December
     
     Parameters : 
-        df (dataframe) : Dataframe to which we want to add the season column
+        df1 (dataframe) : Dataframe to which we want to add the season column
 
     returns : 
         df_new : Dataframe with the season column
@@ -111,12 +111,12 @@ def add_season(df) :
 
     # Step 1 : Add 'month' column in dataframe 
 
-    df['month'] = (df.datetime // 10000) % 100
+    df1['month'] = (df1.datetime // 10000) % 100
 
     # Step 2 : Group the storms by their ID and count the number of grid point 
     #          in each month
 
-    storm_seasons = df.groupby(['storm', 'month']).size().unstack().fillna(0)
+    storm_seasons = df1.groupby(['storm', 'month']).size().unstack().fillna(0)
 
     # Step 3 : Determine the month with the maximum grid points for each storm
 
@@ -130,7 +130,7 @@ def add_season(df) :
     
     # Step 5 : Merge the season column into original dataframe
     
-    df_new = df.merge(storm_seasons['season'], on='storm', how='left')
+    df_new = df1.merge(storm_seasons['season'], on='storm', how='left')
 
     # Step 6 : Delete month column
 
