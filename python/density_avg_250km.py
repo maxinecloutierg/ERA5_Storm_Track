@@ -43,7 +43,7 @@ for _, row in mam.iterrows() :
     lat1 = row['latitude'] 
     lon1 = row['longitude'] 
 
-    # restricting the research in a 2.5 x 2.5deg square
+    # restricting the search in a 2.5 x 2.5deg square
     neighbors = mam[
         (mam['latitude'] >= lat1 - r) & (mam['latitude'] <= lat1 + r) &
         (mam['longitude'] >= lon1 - r) & (mam['longitude'] <= lon1 + r)
@@ -66,9 +66,9 @@ for _, row in mam.iterrows() :
     # turn track dictionnary into dataframe and count the unique occurence of 
     # every storm for each year
     track_df = pd.DataFrame(data = track)
-    #track_df = track_df.groupby('year')['storm_id'].nunique()
+    track_df = track_df.groupby('year')['storm_id'].nunique()
 
-    # number of storm per season in average
+    # number of storm in may in average
     average = track_df['storm_count'].mean()
 
     # add coord and average density
@@ -79,4 +79,4 @@ for _, row in mam.iterrows() :
 
 # transfort m_density into dataframe and save as csv
 df_density = pd.DataFrame(data = mam_density)
-df_density.to_csv('/pampa/cloutier/test_densite_mam.csv')
+#df_density.to_csv('/pampa/cloutier/test_densite_mam.csv')
