@@ -157,7 +157,6 @@ cat, bnd, mk = open_cat_mask(cat_in, bnd_in, mask_in)
 
 # Step 2 : Merge cat and mask to add HU column in cat
 
-cat = cat.loc[(cat.storm == 1) | (cat.storm == 2) | (cat.storm == 3)]
 merge = cat.merge(mk, how='left', on=['latitude', 'longitude'])
 merge = merge.fillna(value = False)
 
