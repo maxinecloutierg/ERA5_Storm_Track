@@ -80,7 +80,7 @@ def get_distance(latS, lonS, bnd) :
         dist = ((latS-latD)**2 + (lonS - lonD)**2)**0.5
         
         if dist <= 5 : 
-            dist_min = False
+            dist_cond = False
             break
             
     return dist_cond

@@ -15,7 +15,7 @@ Created :
 
 Info : 
     
-    This code creates and filters, a file that contains ETC that were active for 24 consecutives 
+    This code creates a file that contains ETC that were active for 24 consecutives 
     hours or more in the crcm6 domain.
 
 """
@@ -47,7 +47,7 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
     mk = xr.open_dataset(mask_in)
     mk = mk.to_dataframe()
 
-    # Step 3 :  Drop index lat lon, but keep columns
+    # Step 3 :  Drop index lat lon
     mk = mk.reset_index()
 
     # Step 4 : Rename lat & lon columns for latitude & longitude
@@ -56,16 +56,50 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
     return cat, bnd, mk
 
 
-def get_distance(latS, lonS, bnd) : 
+
+def distance(latS, lonS, latD, lonD)
+
+    """
+    Use haversine formula to get the distance between two grid points. 
+
+    Parameters : 
+        latS   : Latitude of the storm grid point
+        lonS   : Longitude of the storm grid point
+        latD   : Latitude of the domain grid point
+        lonD   : Longitude of the domain grid point
+
+    Returns  : 
+        dist : Distance (in degrees) between the two coordinates
+    """
+
+    r = 6371 # Earth radius in km
+
+    # Step 1 : Convert lat and lon into radians
+
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+
+    # Step 2 : Calculate distance with Haversine formula
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    dist = r * c
+
+    return dist
+    
+
+
+def get_cond(latS, lonS, bnd) : 
 
     """
     Determine if a given grid point is at a minimal distance of 5deg from
-    all CRCM6 boundary grid point domain
+    CRCM6 boundary domain
 
-    Paramters : 
-        latS  : Latitude of the catalogue grid point
-        lonS  : Longitude of the catalogue grid point
-        bnd   : Dataframe containing boundary grid points
+    Parameters : 
+        latS   : Latitude of the storm grid point
+        lonS   : Longitude of the storm grid point
+        bnd    : Dataframe containing boundary grid points
 
     Returns       : 
         dist_cond : True if all grid points are within a minimal distance of 5deg
@@ -77,7 +111,7 @@ def get_distance(latS, lonS, bnd) :
     for _, row1 in bnd.iterrows():
         latD = row1['lat']
         lonD = row1['lon']
-        dist = ((latS-latD)**2 + (lonS - lonD)**2)**0.5
+        dist = distance(latS, lonS, latD, lonD)
         
         if dist <= 5 : 
             dist_cond = False
@@ -182,7 +216,7 @@ for storm_id, group in merge.groupby('storm'):
     
     # Add a condition where get_distance is not computed if HU == False
     stInDom = group['HU'] & group.apply(
-                    lambda row: get_distance(row['latitude'], row['longitude'], bnd) if row['HU'] else False,
+                    lambda row: get_cond(row['latitude'], row['longitude'], bnd) if row['HU'] else False,
                             axis=1
                                 )
 
