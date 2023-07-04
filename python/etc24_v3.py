@@ -57,10 +57,10 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
 
 
 
-def distance(latS, lonS, latD, lonD)
+def distance(latS, lonS, latD, lonD) : 
 
     """
-    Use haversine formula to get the distance between two grid points. 
+    Use great circle distance formula to get the distance between two grid points. 
 
     Parameters : 
         latS   : Latitude of the storm grid point
@@ -76,15 +76,15 @@ def distance(latS, lonS, latD, lonD)
 
     # Step 1 : Convert lat and lon into radians
 
-    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    lat1, lon1, lat2, lon2 = map(math.radians, [latS, lonS, latD, lonD])
 
-    # Step 2 : Calculate distance with Haversine formula
+    # Step 2 : Calculate distance with great circle distance formula
 
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    dist = r * c
+    dlat = latD - latS
+    dlon = lonD - lonS
+    central_angle = 2 * math.asin(math.sqrt(math.sin(dlat/2)**2 + 
+                    math.cos(latS) * math.cos(latD) * math.sin(dlon/2)**2))
+    dist = math.degrees(central_angle)
 
     return dist
     
@@ -157,6 +157,27 @@ def add_season(df1) :
     storm_seasons['season'] = storm_seasons.idxmax(axis=1)
     
     # Step 4 : Transform month number into season
+
+    """
+    Steps for this line : 
+
+        1. 'map' function is called on 'season' column to apply a function 
+            on each element in the 'season' column. 
+        2.  Inside 'map' function, there is a lambda function that takes 'month'
+            as an input.
+                a.  The function iterates over the 'seasons' dictionnary with 
+                    season for season, months in seasons.items()
+                b.  For each (season, months) pair in the dictionnary, the 
+                    function checks if the given month is present in the list 
+                    of months. 
+                c.  If a match is found, it returns the season associated with the 
+                    month list in the dictionnary. The (next) function is used to 
+                    retreive the first match encountered. 
+                d.  None is returned of no match is found. 
+        3.  Because the lambda function is used on each value in the 'season' column with 
+            'map', the resulting values are applied back to the 'season' column to change the 
+            month number with the associated season. 
+    """
     
     storm_seasons['season'] = storm_seasons['season'].map(
     lambda month: next((season for season, months in seasons.items() if month in months), None)
@@ -238,4 +259,4 @@ for storm_id, group in merge.groupby('storm'):
 df24_season = add_season(df24)
 
 # Step 6 : Save dataframe as csv
-df24_season.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
+df24_season.to_csv('/pampa/cloutier/etc24_consec_v4.csv', index = False)
