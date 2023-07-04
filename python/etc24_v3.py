@@ -166,12 +166,26 @@ df24 = pd.DataFrame(columns = cat.columns) # new dataframe with filtered etc
 
 # create groups for each storm and iterate through them
 for storm_id, group in merge.groupby('storm'):
-    
+   
+    hu_count = group['HU'].sum()
+
+    # We skip storms that have all HU == False values or 
+    # less than 24 HU == True values.
+    if not group['HU'].any() or hu_count < 24:
+                continue
+
     # within each group, iterate through each storm center (with apply function) 
     # to determine if the given grid point is within subdomain and 
     # has a minimal distance to the boundary > 5 degree
-    stInDom = group['HU'] & group.apply(lambda row: get_distance(row['latitude'], 
-					row['longitude'], bnd), axis=1)
+    #stInDom = group['HU'] & group.apply(lambda row: get_distance(row['latitude'], 
+    #				         row['longitude'], bnd), axis=1)
+    
+    # Add a condition where get_distance is not computed if HU == False
+    stInDom = group['HU'] & group.apply(
+                    lambda row: get_distance(row['latitude'], row['longitude'], bnd) if row['HU'] else False,
+                            axis=1
+                                )
+
     count = 0
     
     # count the consecutive True values in stInDom. We want to keep ETC 

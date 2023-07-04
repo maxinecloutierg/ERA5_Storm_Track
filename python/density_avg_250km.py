@@ -2,6 +2,8 @@
 Calculate density around a 250km radius
 
 """
+import pandas as pd
+import math
 
 # Define function to calculate distance between two points using Haversine formula
 # Haversine package ?
@@ -29,8 +31,9 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return distance
 
 
-df = pd.read_csv('/pampa/cloutier/density.csv')
-mam = df.loc[df.season == 'MAM']
+df = pd.read_csv('/pampa/cloutier/etc24_den.csv')
+
+mam = df.loc[(df.season == 'MAM')]
 
 # test de la densité avec seulement MAM
 # Avec la moyenne pas bonne de 250km
@@ -50,11 +53,10 @@ for _, row in mam.iterrows() :
         ]
 
     # Find the grid points that are within a 250km radius 
-    for _, row in neighbors.iterrows():
-        lat2 = row['latitude'] 
-        lon2 = row['longitude'] 
-        storm_count = row['storm_count']
-        avgvors = row['avgVORSmax']
+    for _, row1 in neighbors.iterrows():
+        lat2 = row1['latitude'] 
+        lon2 = row1['longitude'] 
+        storm_count = row1['storm_count']
 
         # calculate distance between grid points
         distance = calculate_distance(lat1, lon1, lat2, lon2)
@@ -66,17 +68,15 @@ for _, row in mam.iterrows() :
     # turn track dictionnary into dataframe and count the unique occurence of 
     # every storm for each year
     track_df = pd.DataFrame(data = track)
-    track_df = track_df.groupby('year')['storm_id'].nunique()
+    #track_df = track_df.groupby(['latitude', 'longitude'])['storm_id'].nunique()
 
-    # number of storm in may in average
     average = track_df['storm_count'].mean()
 
     # add coord and average density
     mam_density['lat'] = mam_density.get('lat', []) + [lat1]
     mam_density['lon'] = mam_density.get('lon', []) + [lon1]
     mam_density['storm_count'] = mam_density.get('storm_count', []) + [average]
-    mam_density['avgvors'] = mam_density.get('avgvors', []) + [avgvors]
 
 # transfort m_density into dataframe and save as csv
 df_density = pd.DataFrame(data = mam_density)
-#df_density.to_csv('/pampa/cloutier/test_densite_mam.csv')
+df_density.to_csv('/pampa/cloutier/test_densite_mam_v2.csv')
