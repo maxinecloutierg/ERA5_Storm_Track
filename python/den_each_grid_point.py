@@ -10,8 +10,9 @@ Created :
 
 Info : 
     
-    This script creates calculates the storm density of every grid point in etc24.csv. The storm density represents 
-    the number of unique storm trackes that were active within a 250km radius around a given grid point. 
+    This script creates calculates the storm density of every grid point in etc24.csv. 
+    The storm density represents the number of unique storm tracks that were active within 
+    a given grid point. 
 
 """
 
@@ -19,7 +20,6 @@ def get_den(df_in) :
     
     """
     Determines storm density of all the storms that passed within a grid point.
-    The density is obtained by calculating the unique count of all storms that passed by a given grid point
 
     Parameters : 
         df_in : Name of the dataframe variable 
@@ -39,9 +39,9 @@ def get_den(df_in) :
 
 import pandas as pd
 
-#df = pd.read_csv('/pampa/cloutier/etc24_consec_v3.csv')
+df = pd.read_csv('/pampa/cloutier/etc24_consec_v3.csv')
 
 # test avec les 6636 tempêtes
-df = pd.read_csv('/pampa/cloutier/etc24_consec.csv')
+#df = pd.read_csv('/pampa/cloutier/etc24_consec.csv')
 dens = get_den(df)
-dens.to_csv('/pampa/cloutier/etc24_den_6636.csv')
+dens.to_csv('/pampa/cloutier/etc24_den.csv')

@@ -57,7 +57,7 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
 
 
 
-def distance(latS, lonS, latD, lonD) : 
+def distance(lat1, lon1, lat2, lon2) : 
 
     """
     Use great circle distance formula to get the distance between two grid points. 
@@ -72,19 +72,21 @@ def distance(latS, lonS, latD, lonD) :
         dist : Distance (in degrees) between the two coordinates
     """
 
-    r = 6371 # Earth radius in km
-
     # Step 1 : Convert lat and lon into radians
 
-    lat1, lon1, lat2, lon2 = map(math.radians, [latS, lonS, latD, lonD])
+    latS, lonS, latD, lonD = map(math.radians, [latS, lonS, latD, lonD])
 
-    # Step 2 : Calculate distance with great circle distance formula
+    # Calculate the absolute difference in longitude
+    lon_diff = abs(lonD - lonS)
 
-    dlat = latD - latS
-    dlon = lonD - lonS
-    central_angle = 2 * math.asin(math.sqrt(math.sin(dlat/2)**2 + 
-                    math.cos(latS) * math.cos(latD) * math.sin(dlon/2)**2))
-    dist = math.degrees(central_angle)
+    # Step 2 : Calculate the radian angular distance using the formula
+
+    dist_rad = math.degrees(math.acos(math.sin(latS) * math.sin(latD) +
+                                      math.cos(latS) * math.cos(latD) * math.cos(lon_diff)))
+
+    #Step 3 : Convert radian distance in degrees
+
+    dist = math.degrees(dist_rad)
 
     return dist
     
@@ -208,7 +210,9 @@ cat_in = ('/home/data/ReAnalysis/ERA5/Storm_analysis/NAECv1/NAEC_1979_2020_v1.cs
 bnd_in = ('/pampa/cloutier/outline_crcm6_domain.csv')
 mask_in = ('/pampa/picart/Masks/mask_GEM5_ERA5grid')
 
+print('reading files...')
 cat, bnd, mk = open_cat_mask(cat_in, bnd_in, mask_in)
+print('files opened')
 
 # Step 2 : Merge cat and mask to add HU column in cat
 
@@ -227,24 +231,26 @@ for storm_id, group in merge.groupby('storm'):
     # We skip storms that have all HU == False values or 
     # less than 24 HU == True values.
     if not group['HU'].any() or hu_count < 24:
-                continue
+        continue
 
     # within each group, iterate through each storm center (with apply function) 
     # to determine if the given grid point is within subdomain and 
     # has a minimal distance to the boundary > 5 degree
+
     #stInDom = group['HU'] & group.apply(lambda row: get_distance(row['latitude'], 
     #				         row['longitude'], bnd), axis=1)
     
-    # Add a condition where get_distance is not computed if HU == False
+    # Add a condition where the condition is automatically set to false if HU == False 
+    # 
     stInDom = group['HU'] & group.apply(
-                    lambda row: get_cond(row['latitude'], row['longitude'], bnd) if row['HU'] else False,
-                            axis=1
-                                )
+                    lambda row: get_cond(row['latitude'], row['longitude'], bnd) 
+                    if row['HU'] else False, axis=1
+                        )
 
     count = 0
     
     # count the consecutive True values in stInDom. We want to keep ETC 
-    # that were active for 24 consecutive hours or more in CRCM6 subdomain
+    # that were active for 24 CONSECUTIVE hours or more in CRCM6 subdomain
     for value in stInDom:
         if value:
             count += 1
