@@ -57,7 +57,7 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
 
 
 
-def distance(lat1, lon1, lat2, lon2) : 
+def angular_distance(lat1, lon1, lat2, lon2) : 
 
     """
     Use great circle distance formula to get the distance between two grid points. 
@@ -74,23 +74,37 @@ def distance(lat1, lon1, lat2, lon2) :
 
     # Step 1 : Convert lat and lon into radians
 
-    latS, lonS, latD, lonD = map(math.radians, [latS, lonS, latD, lonD])
+    latS, lonS, latD, lonD = map(math.radians, [lat1, lon1, lat2, lon2])
 
     # Calculate the absolute difference in longitude
     lon_diff = abs(lonD - lonS)
 
-    # Step 2 : Calculate the radian angular distance using the formula
+    # Step 2 : Calculate the angular distance using the formula
 
-    dist_rad = math.degrees(math.acos(math.sin(latS) * math.sin(latD) +
-                                      math.cos(latS) * math.cos(latD) * math.cos(lon_diff)))
-
-    #Step 3 : Convert radian distance in degrees
-
-    dist = math.degrees(dist_rad)
+    dist = math.degrees(math.acos(math.sin(latS) * math.sin(latD) +
+               math.cos(latS) * math.cos(latD) * math.cos(lon_diff)))
 
     return dist
     
+def eucl_dist(lat1, lon1, lat2, lon2) : 
+    """
+    Use eucledian formula to get the distance between two grid points. 
 
+    Parameters : 
+        lat1   : Latitude of the storm grid point
+        lon1   : Longitude of the storm grid point
+        lat2   : Latitude of the domain grid point
+        lon2   : Longitude of the domain grid point
+
+    Returns  : 
+        dist : Distance (in degrees) between the two coordinates
+    """
+    latD = abs(lat1-lat2)
+    lonD = abs(lon1 - lon2) 
+
+    dist=((lat1-latD)**2.+(lon2-lonD)**2.)**0.5
+
+    return dist
 
 def get_cond(latS, lonS, bnd) : 
 
@@ -115,7 +129,7 @@ def get_cond(latS, lonS, bnd) :
         lonD = row1['lon']
         dist = distance(latS, lonS, latD, lonD)
         
-        if dist <= 5 : 
+        if eucl_dist <= 5 : 
             dist_cond = False
             break
             
@@ -265,4 +279,4 @@ for storm_id, group in merge.groupby('storm'):
 df24_season = add_season(df24)
 
 # Step 6 : Save dataframe as csv
-df24_season.to_csv('/pampa/cloutier/etc24_consec_v4.csv', index = False)
+df24_season.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
