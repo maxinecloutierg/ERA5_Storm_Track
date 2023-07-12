@@ -87,6 +87,7 @@ def angular_distance(lat1, lon1, lat2, lon2) :
     return dist
     
 def eucl_dist(lat1, lon1, lat2, lon2) : 
+
     """
     Use eucledian formula to get the distance between two grid points. 
 
@@ -98,11 +99,9 @@ def eucl_dist(lat1, lon1, lat2, lon2) :
 
     Returns  : 
         dist : Distance (in degrees) between the two coordinates
-    """
-    latD = abs(lat1-lat2)
-    lonD = abs(lon1 - lon2) 
+    """ 
 
-    dist=((lat1-latD)**2.+(lon2-lonD)**2.)**0.5
+    dist=((lat2-lat1)**2+(lon2-lon1)**2)**0.5
 
     return dist
 
@@ -127,9 +126,9 @@ def get_cond(latS, lonS, bnd) :
     for _, row1 in bnd.iterrows():
         latD = row1['lat']
         lonD = row1['lon']
-        dist = distance(latS, lonS, latD, lonD)
+        dist = eucl_dist(latS, lonS, latD, lonD)
         
-        if eucl_dist <= 5 : 
+        if dist <= 5 : 
             dist_cond = False
             break
             
@@ -276,7 +275,7 @@ for storm_id, group in merge.groupby('storm'):
             count = 0
 
 # Step 5 : Add the season column in dataframe
-df24_season = add_season(df24)
+# df24_season = add_season(df24)
 
 # Step 6 : Save dataframe as csv
-df24_season.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
+df24.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
