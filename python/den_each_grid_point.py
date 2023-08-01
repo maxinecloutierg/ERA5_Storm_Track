@@ -1,5 +1,6 @@
 import pandas as pd
 import pdb
+import time
 
 """
     Maxine Cloutier-Gervais
@@ -10,8 +11,8 @@ Created :
 
 Info : 
     
-    This script creates calculates the storm density of every grid point in etc24.csv. 
-    The storm density represents the number of unique storm tracks that were active within 
+    This script creates calculates the cyclone center density of every grid point. 
+    The storm density represents the number of centers that were active within 
     a given grid point. 
 
 """
@@ -25,14 +26,15 @@ def get_den(df_in) :
         df_in : Name of the dataframe variable 
 
     Returns : 
-        df_dn : dataframe that contains all grid points and their track density
+        df_dn : dataframe that contains all grid points and their center density
 
     """
 
     # Step 1 : Group by latitude, longitude and season to get the count of the unique 
     #          occurence of every storm that passed by the grid point. 
 
-    df_dn = df_in.groupby(['latitude', 'longitude', 'season']).agg({'storm' : 'nunique'}).reset_index()
+    #df_dn = df_in.groupby(['latitude', 'longitude', 'season']).agg({'storm' : 'nunique'}).reset_index()
+    df_dn = df_in.groupby(['latitude', 'longitude', 'season'])['storm'].count().reset_index()
     df_dn = df_dn.rename(columns={'storm' : 'storm_count'})
 
     return df_dn
@@ -41,9 +43,12 @@ import pandas as pd
 import xarray as xr
 
 #df = pd.read_csv('/pampa/cloutier/etc24_consec_v4.csv')
-df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_season.csv')
+start = time.time()
+df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_max_season.csv')
 
-# test avec les 6636 tempêtes
-#df = pd.read_csv('/pampa/cloutier/etc24_consec.csv')
-dens = get_den(df)
-dens.to_csv('/pampa/cloutier/track_density/NAEC/NAEC_track_den_each_gp.csv')
+# test for 2000 - 2020
+df_20 = df.loc[(df.lifetime // 1000000 >= 2000) | (df.lifetime // 1000000 <= 2020)]
+dens = get_den(df_20)
+dens.to_csv('/pampa/cloutier/density/NAEC/NAEC2020_2000_max_season_center_den_each_gp.csv', index = False)
+
+print('Time of execution : ' , time.time() - start)
