@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 import xarray as xr
+import time
 
 """ 
 
@@ -216,6 +217,7 @@ def add_season(df1) :
 
 """ MAIN PROGRAM """
 
+start = time.time()
 
 # Step 1 : Open catalogue, boundary catalogue and mask
 
@@ -242,7 +244,7 @@ for storm_id, group in merge.groupby('storm'):
     hu_count = group['HU'].sum()
 
     # We skip storms that have all HU == False values or 
-    # less than 24 HU == True values.
+    # less than 24 HU == True values in total
     if not group['HU'].any() or hu_count < 24:
         continue
 
@@ -275,7 +277,9 @@ for storm_id, group in merge.groupby('storm'):
             count = 0
 
 # Step 5 : Add the season column in dataframe
-# df24_season = add_season(df24)
+df24_season = add_season(df24)
 
 # Step 6 : Save dataframe as csv
 df24.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
+
+print('Execution time = ', time.time() - start)
