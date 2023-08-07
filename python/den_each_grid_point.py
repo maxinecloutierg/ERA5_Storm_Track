@@ -44,11 +44,11 @@ import xarray as xr
 
 #df = pd.read_csv('/pampa/cloutier/etc24_consec_v4.csv')
 start = time.time()
-df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_max_season.csv')
+df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_month_to_season.csv')
 
 # test for 2000 - 2020
-df_20 = df.loc[(df.lifetime // 1000000 >= 2000) | (df.lifetime // 1000000 <= 2020)]
-dens = get_den(df_20)
-dens.to_csv('/pampa/cloutier/density/NAEC/NAEC2020_2000_max_season_center_den_each_gp.csv', index = False)
+#df_20 = df.loc[(df.lifetime // 1000000 >= 2000) | (df.lifetime // 1000000 <= 2020)]
+dens = get_den(df)
+dens.to_csv('/pampa/cloutier/density/NAEC/NAEC_month_to__season_center_den_each_gp.csv', index = False)
 
 print('Time of execution : ' , time.time() - start)
