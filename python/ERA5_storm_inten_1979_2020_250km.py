@@ -5,18 +5,42 @@ import time
 
 """
 
-Credit : Tin Chen (/home/chen/codes/cir_disttr/Cyclone_intensity_sesons.f90
-This code calculates the average VORSmax around a 250km radius of a given
-grid point in ERA5 domain
+    Author : Maxine Cloutier-Gervais
+    Version : August 17th, 2023
+    Credits : Ting-Chen Chen (/home/chen/codes/cir_disttr/Cyclone_intensity_sesons.f90)
+
+    This code calculates the average VORSmax around a 250km radius of a given grid point in ERA5 domain
+    in a 0.5°x0.5° resolution
+
+    To launch the code : 
+    python3 /home/cloutier/summer_2023/python/ERA5_storm_inten_1979_2020_250.py
+
+    You need to import python libraries first with 
+    module load python3 
+    source activate base_plus
+
+    The code takes about 40 minutes to run, so it's better to run it in the background
+    (with tmux, for example). 
 
 """
 
 start = time.time()
+
 # Read catalogue with season column
-print('Reading data...')
 df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_max_season.csv', index_col=0)
 
 def calc_dist(lat1, lon1, lat2, lon2) : 
+"""
+
+Calculate Haversine distance between two grid points in km 
+
+Paramters : 
+- lat1, lon1, lat2, lon2 : Coordinates (in °) of point 1 and point 2
+
+Returns : 
+dist12 : Distance (in km) between point 1 and point 2
+
+"""
 
     # Earth's radius in meters
     r = 6371.22E3
@@ -34,6 +58,10 @@ def calc_dist(lat1, lon1, lat2, lon2) :
     dist12 = r * c 
     
     return dist12
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+#### #### #### #### #### ####  PART ONE : CREATE 2D ARRAYS  #### #### #### #### #### #### #### ####
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 # create 2d arrays so we can refer to season, latitude, longitude and VORSmax  with 
 # storm and lifetime 
@@ -75,7 +103,6 @@ lat.fill(np.nan)
 lon.fill(np.nan)
 vor.fill(np.nan)
 
-print('Creating arrays...')
 # Step 5: Fill the arrays with the corresponding values
 for i, storm in enumerate(unique_storms):
     lifetimes = storms_info[storm]['lifetimes']
@@ -90,16 +117,23 @@ for i, storm in enumerate(unique_storms):
         season[i, j] = seasons[j]
         vor[i,j] = vors[j]
 
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+#### #### #### #### #### PART TWO : CALCULATE AVERAGE VORTICITY  #### #### #### #### #### #### ####
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+
 R = 2.5e5 # searching radius in meters
 
+# Get the unique storm IDs and all lifetimes. 
 storm = np.unique(df['storm'])
 lifetime = df['lifetime'].to_numpy()
 
+# Get the max lifetime of each storm (pmax)
 storm_max_lifetime = df.groupby('storm')['lifetime'].max()
 pmax = storm_max_lifetime.to_numpy()
 
 # virtual ERA5 grid (0.25° x 0.25°) of dim : 
-# Lon : ((359.5 - 0) / 0.5) + 1(indices start at 0)
+# Lon : ((359.5 - 0) / 0.5) + 1 (indices start at 0)
 # Lat : ((90 - 0) / 0.5) + 1
 vix = 720
 vjx = 181
@@ -123,11 +157,8 @@ Snum4 = np.zeros((vix, vjx))
 
 for num in storm :
     print('Processing storm #', num)
-    #print('\nStorm... ', num)
     
-
-    # Keep in mind that num starts at 1 whereas 
-    # indices in python start at 0
+    # Keep in mind that num starts at 1 whereas indices in python start at 0
         
      # Iterate through all grid points of the storm
     for point in range(1, pmax[num - 1] + 1): 
@@ -145,21 +176,19 @@ for num in storm :
         #print(Tlon, 'is II = ', II, 'and', Tlat, 'is JJ = ', JJ)
             
         # Determine searching distance in virtual grid points
-        sgd = int(R/1.1e5/0.5) + 2 # 20 is a buffer 
+        sgd = int(R/1.1e5/0.5) + 2 # 2 is a buffer 
         maxi = max(0, II-sgd)
         mini = min(II+sgd, vix)
         maxj = max(0, JJ-sgd)
         minj = min(JJ+sgd, vjx)
-        #print(maxi, mini, maxj, minj)
+
         # Searching i and j that are within a distance R from II, JJ
-        #print('Searching i and j that are within a distance R from II, JJ')
         for i in np.arange(maxi, mini, 1) : 
             for j in np.arange(maxj, minj, 1) : 
                 dist = calc_dist(vlat[j], vlon[i], Tlat, Tlon)
-                #print('distance between (', vlat[j], ',', vlon[i], 
-                          #') and (', Tlat, ',', Tlon, ') = ', dist)
+
                 if dist < R : 
-                    # Affect True to the grid cell at JJ, II
+                    # Affect True to the grid cell at II, JJ and add 1 to the storm count
                     if season[num-1, point-1] == 'JJA' : 
                         Sinten1[i,j] = Sinten1[i,j]+vor[num-1,point-1]*1.e5
                         Snum1[i,j] = Snum1[i,j]+1
@@ -176,7 +205,8 @@ for num in storm :
                         Sinten4[i,j] = Sinten4[i,j]+vor[num-1,point-1]*1.e5
                         Snum4[i,j] = Snum4[i,j]+1
             
-    
+# When all storms are looped through, we iterate through all the virtual grid points
+# and calculate the average vorticity  
 for vi in np.arange(0, vix-1, 1) : 
     for vj in range (0, vjx-1, 1) : 
         if Snum1[vi, vj] > 0 : 
@@ -188,12 +218,15 @@ for vi in np.arange(0, vix-1, 1) :
         if Snum4[vi, vj] > 0 : 
             Sinten4[vi,vj] = Sinten4[vi,vj]/Snum4[vi,vj]
 
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+#### #### #### #### #### ####  PART THREE : CREATE NETCDF FILE   #### #### #### #### #### #### ####
+#### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
+
 Sinten1_T = np.transpose(Sinten1)
 Sinten2_T = np.transpose(Sinten2)
 Sinten3_T = np.transpose(Sinten3)
 Sinten4_T = np.transpose(Sinten4)
-
-#print(Sinten4.size)
 
 #Create xarray DataArrays for track densities for each season with the correct coordinates
 trackInt_JJA_da = xr.DataArray(Sinten1_T, coords=[('latitude', vlat), ('longitude', vlon)])
@@ -214,6 +247,5 @@ dataset = xr.Dataset({
 
 # Save the dataset to a NetCDF file
 dataset.to_netcdf('/pampa/cloutier/density/NAEC/Track_intensity_1979_2020_all_seasons_250km.nc')
-
 
 print('Execution Time : ', time.time() - start)

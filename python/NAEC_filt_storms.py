@@ -8,16 +8,21 @@ import time
 
 """ 
 
-    Maxine Cloutier-Gervais
+    Author : Maxine Cloutier-Gervais
+    Version : June 7th, 2023
 
-Created : 
+    This code creates a file that contains ETC that has at least 24 grid points in more (lifetime of 24h) 
+    inthe CRCM6 domain at a minimal distance of 5° from the boundary. 
 
-    June 7th, 2023
+    To launch the code : 
+    python3 /home/cloutier/summer_2023/python/ERA5_storm_inten_1979_2020_250.py
 
-Info : 
-    
-    This code creates a file that contains ETC that were active for 24 consecutives 
-    hours or more in the crcm6 domain.
+    You need to import python libraries first with 
+    module load python3 
+    source activate base_plus
+
+    The code takes about XX minutes to run, so it's better to run it in the background
+    (with tmux, for example). 
 
 """
 
@@ -40,7 +45,6 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
     """
     
     # Step 1 : Open catalogue and boundary csv file
-
     cat = pd.read_csv(cat_in)
     bnd = pd.read_csv(bnd_in, index_col = 0)
 
@@ -56,36 +60,6 @@ def open_cat_mask(cat_in, bnd_in, mask_in) :
 
     return cat, bnd, mk
 
-
-
-def angular_distance(lat1, lon1, lat2, lon2) : 
-
-    """
-    Use great circle distance formula to get the distance between two grid points. 
-
-    Parameters : 
-        latS   : Latitude of the storm grid point
-        lonS   : Longitude of the storm grid point
-        latD   : Latitude of the domain grid point
-        lonD   : Longitude of the domain grid point
-
-    Returns  : 
-        dist : Distance (in degrees) between the two coordinates
-    """
-
-    # Step 1 : Convert lat and lon into radians
-
-    latS, lonS, latD, lonD = map(math.radians, [lat1, lon1, lat2, lon2])
-
-    # Calculate the absolute difference in longitude
-    lon_diff = abs(lonD - lonS)
-
-    # Step 2 : Calculate the angular distance using the formula
-
-    dist = math.degrees(math.acos(math.sin(latS) * math.sin(latD) +
-               math.cos(latS) * math.cos(latD) * math.cos(lon_diff)))
-
-    return dist
     
 def eucl_dist(lat1, lon1, lat2, lon2) : 
 
@@ -134,8 +108,6 @@ def get_cond(latS, lonS, bnd) :
             break
             
     return dist_cond
-
-
 
 
 def add_season(df1) : 
@@ -234,7 +206,7 @@ print('files opened')
 merge = cat.merge(mk, how='left', on=['latitude', 'longitude'])
 merge = merge.fillna(value = False)
 
-# Step 3 : Filter storms and add to new dataframe
+# Step 3 : New dataframe that will contain filtered ETCs
 
 df24 = pd.DataFrame(columns = cat.columns) # new dataframe with filtered etc
 
@@ -243,20 +215,14 @@ for storm_id, group in merge.groupby('storm'):
    
     hu_count = group['HU'].sum()
 
-    # We skip storms that have all HU == False values or 
-    # less than 24 HU == True values in total
+    # We skip storms that have all HU == False values or less than 24 HU == True values in total
     if not group['HU'].any() or hu_count < 24:
         continue
 
     # within each group, iterate through each storm center (with apply function) 
     # to determine if the given grid point is within subdomain and 
     # has a minimal distance to the boundary > 5 degree
-
-    #stInDom = group['HU'] & group.apply(lambda row: get_distance(row['latitude'], 
-    #				         row['longitude'], bnd), axis=1)
     
-    # Add a condition where the condition is automatically set to false if HU == False 
-    # 
     stInDom = group['HU'] & group.apply(
                     lambda row: get_cond(row['latitude'], row['longitude'], bnd) 
                     if row['HU'] else False, axis=1

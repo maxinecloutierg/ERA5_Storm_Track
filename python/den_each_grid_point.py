@@ -1,4 +1,5 @@
 import pandas as pd
+import xarray as xr
 import pdb
 import time
 
@@ -12,7 +13,7 @@ Created :
 Info : 
     
     This script creates calculates the cyclone center density of every grid point. 
-    The storm density represents the number of centers that were active within 
+    The cyclone center density represents the number of centers that were active within 
     a given grid point. 
 
 """
@@ -38,9 +39,6 @@ def get_den(df_in) :
     df_dn = df_dn.rename(columns={'storm' : 'storm_count'})
 
     return df_dn
-
-import pandas as pd
-import xarray as xr
 
 #df = pd.read_csv('/pampa/cloutier/etc24_consec_v4.csv')
 start = time.time()
