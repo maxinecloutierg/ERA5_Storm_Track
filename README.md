@@ -18,14 +18,7 @@ $ source activate base_plus
 `jupyter` folder contains all `.ipynb` codes. I mainly use them to 
 
 1. Run quick codes (less than 5 minutes)  
-  1.1 Apply modifications to files (add the season column for example)  
-  1.2 Calculate the frequency distribution of 800km averaged vorticity  
-  1.3 Calculate standardized characteristics (10m wind speed for example)
 2. Create maps and figures  
-   2.1 Track density  
-   2.2 Cyclone center density  
-   2.3 Maps to test different projections to represent CRCM6 domain  
-   2.4 Reproduction of figure 1 and 2 in Chen & al (2022).  
 3. Debug some bigger code  
    
 ### Python Folder
