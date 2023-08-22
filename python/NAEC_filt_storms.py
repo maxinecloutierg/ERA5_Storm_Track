@@ -11,8 +11,8 @@ import time
     Author : Maxine Cloutier-Gervais
     Version : June 7th, 2023
 
-    This code creates a file that contains ETC that has at least 24 grid points in more (lifetime of 24h) 
-    inthe CRCM6 domain at a minimal distance of 5° from the boundary. 
+    This code creates a file that contains ETC that has at least 24 grid points (lifetime of 24h) 
+    in the CRCM6 domain at a minimal distance of 5° from the boundary. 
 
     To launch the code : 
     python3 /home/cloutier/summer_2023/python/ERA5_storm_inten_1979_2020_250.py
@@ -21,7 +21,7 @@ import time
     module load python3 
     source activate base_plus
 
-    The code takes about XX minutes to run, so it's better to run it in the background
+    The code takes a while to run, so it's better to run it in the background
     (with tmux, for example). 
 
 """
@@ -246,6 +246,6 @@ for storm_id, group in merge.groupby('storm'):
 df24_season = add_season(df24)
 
 # Step 6 : Save dataframe as csv
-df24.to_csv('/pampa/cloutier/etc24_consec_v3.csv', index = False)
+df24.to_csv('/pampa/cloutier/ERA5_storm_tracks/filtered/etc24_consec_v3.csv', index = False)
 
 print('Execution time = ', time.time() - start)

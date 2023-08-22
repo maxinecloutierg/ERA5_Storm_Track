@@ -40,7 +40,6 @@ def get_den(df_in) :
 
     return df_dn
 
-#df = pd.read_csv('/pampa/cloutier/etc24_consec_v4.csv')
 start = time.time()
 df = pd.read_csv('/pampa/cloutier/storm_tracks/NAEC/NAEC_1979-2020_month_to_season.csv')
 
