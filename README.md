@@ -1,21 +1,28 @@
 # Summer Intership 2023
 
-This repository contrains all the codes that were used to recreate the figures in [Chen & al](https://doi.org/10.1029/2022GL098776). 
+This repository contains all the codes that were used to recreate the figures in [Chen & al](https://doi.org/10.1029/2022GL098776). 
+In Chen & al (2023), the region of interest is located over North Northeastern America. However, during my internship, the region of interest is the domain of the 6th version of the Canadian Regional Climate Model (CRCM6/GEM5).
 
 ## How to use
-(TODO)
-
-All the codes here are in `.py`. 
-
-## Folders
+Import python libraries before using `.ipynb`and `.py` files : 
+```
+$ module load python3
+$ source activate base_plus
+```
 
 ### Jupyter Folder
 `jupyter` folder contains all `.ipynb` codes. I mainly use them to 
 
-1. Test some code
+1. Run quick codes (less than 5 minutes)
 2. Create figures
+3. Debug longer code
 
-This folder  **does not** contain official codes ! I only use them to quickly test things and see the output quickly. 
+### Python Folder
+`python` folder contains all `.py` executable files. 
+
+
+
+
 
 
 
