@@ -8,11 +8,6 @@ In addition to recreating the figures that represent the seasonnality of the sto
 
 
 ## How to use
-Import python libraries before using `.ipynb`and `.py` files : 
-```
-$ module load python3
-$ source activate base_plus
-```
 
 ### Jupyter Folder
 `jupyter` folder contains all `.ipynb` codes. I mainly use them to 
